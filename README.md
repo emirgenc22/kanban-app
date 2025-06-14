@@ -54,10 +54,6 @@ kanban-app/
 ├── login-screen.png
 └── README.md
 
-yaml
-Kopyala
-Düzenle
-
 ---
 
 ## 👨‍💻 Author
