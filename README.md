@@ -7,7 +7,7 @@ Users can register, log in, create tasks, assign them to departments, and move t
 
 ## 🔐 Login Screen
 
-![Login Page](login-screen.png)
+![Login Page](login_screen.png)
 
 ---
 
