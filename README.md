@@ -4,7 +4,7 @@ Modern, kullanıcı dostu bir **Kanban uygulaması**. Giriş yap, görevleri olu
 
 ## 🔐 Giriş Ekranı
 
-![Login Page](login_screen.jpg)
+![Login Page](login_screen.png)
 
 ## 🚀 Özellikler
 - Kullanıcı kaydı ve giriş
