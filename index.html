@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EmirGenc Kanban APP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="icon.ico">
+</head>
+<body>
+
+<header>
+ <img src="logo.png" alt="Logo" style="height: 50px;">
+  <div class="user-controls">
+    <div id="search-area" style="display:none;">
+      <input type="text" id="searchInput" placeholder="Search tasks...">
+      <select id="filterType">
+        <option value="all">All</option>
+        <option value="title">Title</option>
+        <option value="description">Description</option>
+        <option value="dueDate">Date</option>
+      </select>
+    </div>
+    <div id="notification-area" onclick="toggleNotifications()"  style="display:none;">
+      <span id="notification-bell"><i class="fas fa-bell"></i></span>
+      <div id="notification-count">0</div>
+    </div>
+    <div id="notification-dropdown">
+      <div class="notification-header">
+        <h3>Notifications</h3>
+        <div class="notification-controls">
+          <button id="sound-toggle" title="Toggle notification sounds">
+            <i class="fas fa-volume-up"></i>
+          </button>
+          <button id="mark-all-read">Mark All as Read</button>
+          <button id="clear-notifications">Clear Notifications</button>
+        </div>
+      </div>
+      <ul id="notification-list"></ul>
+    </div>
+    <div id="user-profile" style="display:none;">
+      <div id="avatar-display">
+        <div id="user-avatar"></div>
+      </div>
+      <span id="username-display"></span>
+    </div>
+  </div>
+</header>
+
+<div id="auth-area">
+  <h2>Login or Register</h2>
+  <input type="text" id="username" placeholder="Username" />
+  <input type="password" id="password" placeholder="Password" />
+  <button id="loginBtn">Login</button>
+  <button id="registerBtn">Register</button>
+</div>
+
+<div id="register-details" style="display:none;">
+  <h2>Registration Details</h2>
+  <div id="userRoleGroup" class="form-group">
+    <label for="userRole">Role</label>
+    <select id="userRole">
+      <option value="user">User</option>
+      <option value="manager">Manager</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label for="userDepartment">Department</label>
+    <select id="userDepartment">
+      <option value="Software">Software</option>
+      <option value="Design">Design</option>
+      <option value="Marketing">Marketing</option>
+      <option value="Finance">Finance</option>
+      <option value="HR">Human Resources</option>
+    </select>
+  </div>
+  <div class="avatar-selection">
+    <p>Select an Avatar:</p>
+    <div class="avatar-options">
+      <div class="avatar-option" data-avatar="avatar1"><i class="fas fa-user-circle"></i></div>
+      <div class="avatar-option" data-avatar="avatar2"><i class="fas fa-user-tie"></i></div>
+      <div class="avatar-option" data-avatar="avatar3"><i class="fas fa-user-ninja"></i></div>
+      <div class="avatar-option" data-avatar="avatar4"><i class="fas fa-user-astronaut"></i></div>
+      <div class="avatar-option" data-avatar="avatar5"><i class="fas fa-user-graduate"></i></div>
+    </div>
+    <input type="hidden" id="selectedAvatar" value="avatar1">
+  </div>
+  <button id="completeRegisterBtn">Complete Registration</button>
+  <button id="cancelRegisterBtn">Cancel</button>
+</div>
+
+<div id="main-area">
+  <div class="toolbar">
+    <div class="left-controls">
+      <button id="addTaskBtn"><i class="fas fa-plus"></i> Add Task</button>
+      <select id="departmentFilter" style="display:none;">
+        <option value="all">All Departments</option>
+        <option value="Software">Software</option>
+        <option value="Design">Design</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Finance">Finance</option>
+        <option value="HR">Human Resources</option>
+      </select>
+    </div>
+    <div class="right-controls">
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+  
+  <div id="kanban">
+    <div class="column" data-status="todo" ondragover="allowDrop(event)" ondrop="dropTask(event)">
+      <h3>To Do</h3>
+      <div class="tasks-container"></div>
+    </div>
+    <div class="column" data-status="inprogress" ondragover="allowDrop(event)" ondrop="dropTask(event)">
+      <h3>In Progress</h3>
+      <div class="tasks-container"></div>
+    </div>
+    <div class="column" data-status="done" ondragover="allowDrop(event)" ondrop="dropTask(event)">
+      <h3>Done</h3>
+      <div class="tasks-container"></div>
+    </div>
+  </div>
+</div>
+
+<div id="taskModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeTaskModal">&times;</span>
+    <h2 id="modalTitle">Task Details</h2>
+    <input type="hidden" id="taskId" />
+    <div class="form-group">
+      <label for="taskTitle">Title</label>
+      <input type="text" id="taskTitle" />
+    </div>
+    <div class="form-group">
+      <label for="taskDesc">Description</label>
+      <textarea id="taskDesc" rows="4"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="taskDate">Due Date</label>
+      <input type="date" id="taskDate" />
+    </div>
+    <div class="form-group">
+      <label for="taskDepartment">Department</label>
+      <select id="taskDepartment">
+        <option value="Software">Software</option>
+        <option value="Design">Design</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Finance">Finance</option>
+        <option value="HR">Human Resources</option>
+      </select>
+    </div>
+    <div class="form-group" id="assigneeGroup">
+      <label for="assignee">Assignee</label>
+      <select id="assignee"></select>
+    </div>
+    <div class="form-group">
+      <label for="taskPriority">Priority</label>
+      <select id="taskPriority">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button id="saveTaskBtn">Save</button>
+      <button id="cancelTaskBtn">Cancel</button>
+      <button id="deleteTaskBtn" style="display:none; background-color: #e74c3c;">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="avatarModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeAvatarModal">&times;</span>
+    <h2>Select Avatar</h2>
+    <div class="avatar-options-modal">
+      <div class="avatar-option" data-avatar="avatar1"><i class="fas fa-user-circle"></i></div>
+      <div class="avatar-option" data-avatar="avatar2"><i class="fas fa-user-tie"></i></div>
+      <div class="avatar-option" data-avatar="avatar3"><i class="fas fa-user-ninja"></i></div>
+      <div class="avatar-option" data-avatar="avatar4"><i class="fas fa-user-astronaut"></i></div>
+      <div class="avatar-option" data-avatar="avatar5"><i class="fas fa-user-graduate"></i></div>
+      <div class="avatar-option" data-avatar="avatar6"><i class="fas fa-user-secret"></i></div>
+      <div class="avatar-option" data-avatar="avatar7"><i class="fas fa-user-md"></i></div>
+      <div class="avatar-option" data-avatar="avatar8"><i class="fas fa-user-cog"></i></div>
+    </div>
+    <button id="saveAvatarBtn">Save</button>
+  </div>
+</div>
+
+<div id="commentModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeCommentModal">&times;</span>
+    <h2 id="commentModalTitle">Task Completion</h2>
+    <input type="hidden" id="commentTaskId" />
+    <input type="hidden" id="commentType" />
+    
+    <div class="form-group">
+      <label for="taskComment">Comment</label>
+      <textarea id="taskComment" rows="4" placeholder="Write a comment about completing the task..."></textarea>
+    </div>
+    
+    <div id="commentsList" class="comment-list" style="display: none;">
+    </div>
+    
+    <div class="modal-actions">
+      <button id="saveCommentBtn">Submit</button>
+      <button id="cancelCommentBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="userManagementModal" class="modal">
+  <div class="modal-content">
+    <span class="close-modal" id="closeUserManagementModal">&times;</span>
+    <h2>User Management</h2>
+    
+    <div id="usersList" class="user-list">
+    </div>
+    
+    <div id="userEditForm" style="display: none; margin-top: 20px;">
+      <h3>Edit User</h3>
+      <input type="hidden" id="editUserId" />
+      
+      <div class="form-group">
+        <label for="editUserUsername">Username</label>
+        <input type="text" id="editUserUsername" />
+      </div>
+      
+      <div class="form-group">
+        <label for="editUserPassword">Password</label>
+        <input type="password" id="editUserPassword" placeholder="Fill to change" />
+      </div>
+      
+      <div class="form-group">
+        <label for="editUserRole">Role</label>
+        <select id="editUserRole">
+          <option value="user">User</option>
+          <option value="manager">Manager</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="editUserDepartment">Department</label>
+        <select id="editUserDepartment">
+          <option value="Software">Software</option>
+          <option value="Design">Design</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Finance">Finance</option>
+          <option value="HR">Human Resources</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Avatar</label>
+        <div class="avatar-options">
+          <div class="avatar-option" data-avatar="avatar1"><i class="fas fa-user-circle"></i></div>
+          <div class="avatar-option" data-avatar="avatar2"><i class="fas fa-user-tie"></i></div>
+          <div class="avatar-option" data-avatar="avatar3"><i class="fas fa-user-ninja"></i></div>
+          <div class="avatar-option" data-avatar="avatar4"><i class="fas fa-user-astronaut"></i></div>
+          <div class="avatar-option" data-avatar="avatar5"><i class="fas fa-user-graduate"></i></div>
+        </div>
+        <input type="hidden" id="editUserAvatar" value="avatar1">
+      </div>
+      
+      <div class="modal-actions">
+        <button id="saveUserBtn">Save</button>
+        <button id="cancelUserEditBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="site-footer">
+  <p>Created by <strong>Ali Emir Genç</strong> &copy; 2025</p>
+</footer>
+<script src="script.js"></script>
+</body>
+</html>
